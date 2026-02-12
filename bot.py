@@ -57,7 +57,8 @@ async def ask(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         # إرسال السؤال لـ Gemini
         response = model.generate_content(user_question)
-        answer = response.text
+        answer = response.candidates[0].content.parts[0].text
+    
         
         await update.message.reply_text(f"🤖 {answer}")
         
