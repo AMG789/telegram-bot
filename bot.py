@@ -26,6 +26,15 @@ def ask_ai(prompt):
     )
 
     data = response.json()
+
+    # لو في خطأ من OpenRouter
+    if "error" in data:
+        return f"OpenRouter Error: {data['error']}"
+
+    # تأكد إن choices موجودة
+    if "choices" not in data:
+        return f"Unexpected response: {data}"
+
     return data["choices"][0]["message"]["content"]
 
 # ================== Flask ==================
