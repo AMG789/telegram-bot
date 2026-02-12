@@ -1,4 +1,5 @@
 import os
+import requests
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandler, filters
 from flask import Flask
@@ -7,11 +8,28 @@ import google.generativeai as genai
 
 # التوكنات من Railway
 TOKEN = os.getenv("BOT_TOKEN")
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 
-# إعداد Gemini
-genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel('gemini-1.5-flash')
+def ask_ai(prompt):
+    response = requests.post(
+        "https://openrouter.ai/api/v1/chat/completions",
+        headers={
+            "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+            "Content-Type": "application/json",
+        },
+        json={
+            "model": "meta-llama/llama-3.1-8b-instruct:free",
+            "messages": [
+                {"role": "user", "content": prompt}
+            ],
+        },
+    )
+
+    return response.json()["choices"][0]["message"]["content"]
+
+# إعداد
+
+
 
 # Flask للحفاظ على استيقاظ البوت
 app = Flask(__name__)
@@ -29,7 +47,7 @@ def run_flask():
 # ========== أوامر البوت ==========
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "🤖 مرحباً! أنا بوت ذكي باستخدام Gemini AI\n\n"
+        "🤖 مرحباً! أنا بوت ذكي باستخدام AMG"
         "الأوامر المتاحة:\n"
         "/start - بدء البوت\n"
         "/ask [سؤالك] - اسألني أي شيء\n"
@@ -56,8 +74,9 @@ async def ask(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     try:
         # إرسال السؤال لـ Gemini
-        response = model.generate_content(user_question)
-        answer = response.candidates[0].content.parts[0].text
+    reply = ask_ai(user_text)
+await update.message.reply_text(reply)
+         
     
         
         await update.message.reply_text(f"🤖 {answer}")
