@@ -1,41 +1,17 @@
 import os
-import requests
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandler, filters
 from flask import Flask
 from threading import Thread
+import google.generativeai as genai
 
-# التوكنات من Railway
+# ================== Environment Variables ==================
 TOKEN = os.getenv("BOT_TOKEN")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
-# ================== AI Function ==================
-def ask_ai(prompt):
-    response = requests.post(
-        "https://openrouter.ai/api/v1/chat/completions",
-        headers={
-            "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-            "Content-Type": "application/json",
-        },
-        json={
-            "model": "openchat/openchat-7b:free", 
-            "messages": [
-                {"role": "user", "content": prompt}
-            ],
-        },
-    )
-
-    data = response.json()
-
-    # لو في خطأ من OpenRouter
-    if "error" in data:
-        return f"OpenRouter Error: {data['error']}"
-
-    # تأكد إن choices موجودة
-    if "choices" not in data:
-        return f"Unexpected response: {data}"
-
-    return data["choices"][0]["message"]["content"]
+# ================== Configure Gemini ==================
+genai.configure(api_key=GEMINI_API_KEY)
+model = genai.GenerativeModel("gemini-1.5-flash")
 
 # ================== Flask ==================
 app = Flask(__name__)
@@ -76,8 +52,8 @@ async def ask(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.chat.send_action(action="typing")
 
     try:
-        reply = ask_ai(user_question)
-        await update.message.reply_text(f"🤖 {reply}")
+        response = model.generate_content(user_question)
+        await update.message.reply_text(f"🤖 {response.text}")
 
     except Exception as e:
         await update.message.reply_text(f"❌ حدث خطأ: {str(e)}")
@@ -88,8 +64,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.chat.send_action(action="typing")
 
     try:
-        reply = ask_ai(user_message)
-        await update.message.reply_text(f"🤖 {reply}")
+        response = model.generate_content(user_message)
+        await update.message.reply_text(f"🤖 {response.text}")
 
     except Exception as e:
         await update.message.reply_text(f"❌ حدث خطأ: {str(e)}")
