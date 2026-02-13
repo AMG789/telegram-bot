@@ -7,7 +7,7 @@ from threading import Thread
 
 # التوكنات من Railway
 TOKEN = os.getenv("BOT_TOKEN")
-OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 # ================== AI Function ==================
 def ask_ai(prompt):
