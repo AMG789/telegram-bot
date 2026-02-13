@@ -10,7 +10,7 @@ TOKEN = os.getenv("BOT_TOKEN")
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 
 # ================== AI Function ==================
-def ask_ai(prompt):
+def ask_ai(prompt): 
     response = requests.post(
         "https://openrouter.ai/api/v1/chat/completions",
         headers={
